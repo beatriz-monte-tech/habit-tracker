@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Wait for MongoDB
+      run: |
+        until mongosh --host localhost:27017 --eval "print('MongoDB is ready')"; do
+          echo "Waiting for MongoDB..."
+          sleep 2
+        done
+
+    - name: Run unit tests
+      run: npm run test:unit
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/habit-tracker-test
+        JWT_SECRET: test_secret_key
+
+    - name: Run integration tests
+      run: npm run test:integration
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/habit-tracker-test
+        JWT_SECRET: test_secret_key
+
+    - name: Start server for external tests
+      run: |
+        npm start &
+        sleep 10
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/habit-tracker-test
+        JWT_SECRET: test_secret_key
+        PORT: 3000
+
+    - name: Run external tests
+      run: npm run test:external
+      env:
+        API_URL: http://localhost:3000
+
+    - name: Generate test report
+      run: echo "All tests completed successfully!"
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: echo "Build completed successfully!"

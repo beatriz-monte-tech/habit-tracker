@@ -1,0 +1,114 @@
+### Health check
+GET http://localhost:3000/health
+
+### === AUTH ROUTES ===
+
+### Registrar usuário
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Beatriz Silva",
+  "email": "beatriz@teste.com",
+  "password": "123456"
+}
+
+### Login (COPIE O TOKEN DA RESPOSTA)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "beatriz@teste.com",
+  "password": "123456"
+}
+
+### === HABITS ROUTES (PRECISA DO TOKEN) ===
+
+### Criar hábito
+POST http://localhost:3000/api/habits
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+{
+  "title": "Exercitar-se",
+  "description": "30 minutos de exercício diário",
+  "frequency": "daily",
+  "target": 1
+}
+
+### Listar hábitos
+GET http://localhost:3000/api/habits
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+### Criar outro hábito
+POST http://localhost:3000/api/habits
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+{
+  "title": "Ler livros",
+  "description": "Ler pelo menos 20 páginas",
+  "frequency": "daily"
+}
+
+### Deletar (desativar) um hábito - substitua HABIT_ID_AQUI
+DELETE http://localhost:3000/api/habits/68d03e0106ea6aeb74137064
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+### Marcar progresso (substitua HABIT_ID pelo ID real do hábito)
+POST http://localhost:3000/api/habits/68d03bab7cc36c487ab53f7e/progress
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+{
+  "completed": true,
+  "notes": "Corrida no parque, 35 minutos"
+}
+
+### === PROGRESS ROUTES ===
+
+### Ver progresso geral (últimos 30 dias)
+GET http://localhost:3000/api/progress/overview
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+### Ver progresso geral (últimos 7 dias)
+GET http://localhost:3000/api/progress/overview?period=7
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+### Ver progresso de um hábito específico (substitua HABIT_ID)
+GET http://localhost:3000/api/progress/habit/68d03bab7cc36c487ab53f7e
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+### === TESTAR PROGRESSO EM DIAS DIFERENTES ===
+
+### Marcar progresso para hoje
+POST http://localhost:3000/api/habits/68d03bab7cc36c487ab53f7e/progress
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+{
+  "completed": true,
+  "notes": "Exercício hoje"
+}
+
+### Marcar progresso para ontem
+POST http://localhost:3000/api/habits/68d03bab7cc36c487ab53f7e/progress
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+{
+  "date": "2025-09-20",
+  "completed": true,
+  "notes": "Exercício ontem"
+}
+
+### Marcar progresso para anteontem
+POST http://localhost:3000/api/habits/68d03bab7cc36c487ab53f7e/progress
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGQwM2E2NDljOTBhMmI0YTc0YTdkZmYiLCJpYXQiOjE3NTg0NzY5MzksImV4cCI6MTc1OTA4MTczOX0.9CvDx7v2rT1uVp7Z9ZhRyFLhdfmvC2iGRM-cAVZAovI
+
+{
+  "date": "2025-09-19",
+  "completed": false,
+  "notes": "Não consegui fazer"
+}
