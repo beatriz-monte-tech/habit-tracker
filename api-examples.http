@@ -1,0 +1,209 @@
+### ===========================================
+### HABIT TRACKER API - EXEMPLOS DE USO
+### ===========================================
+### 
+### 🚀 INSTRUÇÕES:
+### 1. Primeiro faça o registro de usuário
+### 2. Depois faça login e COPIE O TOKEN da resposta
+### 3. Substitua YOUR_TOKEN_HERE pelo token real em todas as requisições
+### 4. Substitua HABIT_ID_HERE pelos IDs reais dos hábitos criados
+### 
+### 📍 Endpoints:
+### - API REST: http://localhost:3000/api
+### - GraphQL Playground: http://localhost:3000/graphql
+### - Health Check: http://localhost:3000/health
+### ===========================================
+
+### Health Check
+GET http://localhost:3000/health
+
+### ===========================================
+### 🔐 AUTENTICAÇÃO
+### ===========================================
+
+### Registrar usuário
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Seu Nome Aqui",
+  "email": "seu@email.com",
+  "password": "123456"
+}
+
+### Login (⚠️ COPIE O TOKEN DA RESPOSTA)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "seu@email.com",
+  "password": "123456"
+}
+
+### ===========================================
+### 📝 GERENCIAMENTO DE HÁBITOS
+### ===========================================
+
+### Listar todos os hábitos
+GET http://localhost:3000/api/habits
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Criar novo hábito
+POST http://localhost:3000/api/habits
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "title": "Exercitar-se",
+  "description": "30 minutos de exercício diário",
+  "frequency": "daily",
+  "target": 1
+}
+
+### Criar hábito semanal
+POST http://localhost:3000/api/habits
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "title": "Ler livros",
+  "description": "Ler pelo menos 20 páginas",
+  "frequency": "weekly"
+}
+
+### Criar hábito personalizado
+POST http://localhost:3000/api/habits
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "title": "Meditar",
+  "description": "10 minutos de meditação",
+  "frequency": "custom",
+  "customDays": ["monday", "wednesday", "friday"]
+}
+
+### Buscar hábito específico
+GET http://localhost:3000/api/habits/HABIT_ID_HERE
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Atualizar hábito
+PUT http://localhost:3000/api/habits/HABIT_ID_HERE
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "title": "Exercitar-se - ATUALIZADO",
+  "description": "45 minutos de exercício",
+  "target": 2
+}
+
+### Desativar hábito
+DELETE http://localhost:3000/api/habits/HABIT_ID_HERE
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### ===========================================
+### 📊 PROGRESSO E ESTATÍSTICAS
+### ===========================================
+
+### Marcar progresso para hoje
+POST http://localhost:3000/api/habits/HABIT_ID_HERE/progress
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "completed": true,
+  "notes": "Exercício completo hoje!"
+}
+
+### Marcar progresso para data específica
+POST http://localhost:3000/api/habits/HABIT_ID_HERE/progress
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "date": "2025-09-20",
+  "completed": false,
+  "notes": "Não consegui hoje, mas amanhã vai!"
+}
+
+### Ver estatísticas gerais (últimos 30 dias)
+GET http://localhost:3000/api/progress/overview
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Ver estatísticas da última semana
+GET http://localhost:3000/api/progress/overview?period=7
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Ver progresso de hábito específico
+GET http://localhost:3000/api/progress/habit/HABIT_ID_HERE
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### ===========================================
+### 🔍 GRAPHQL EXAMPLES
+### ===========================================
+
+### GraphQL - Registrar usuário
+POST http://localhost:3000/graphql
+Content-Type: application/json
+
+{
+  "query": "mutation { register(name: \"Nome GraphQL\", email: \"graphql@teste.com\", password: \"123456\") { token user { id name email } } }"
+}
+
+### GraphQL - Listar hábitos
+POST http://localhost:3000/graphql
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "query": "query { habits { id title description frequency target isActive } }"
+}
+
+### GraphQL - Criar hábito
+POST http://localhost:3000/graphql
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "query": "mutation { createHabit(title: \"Hábito GraphQL\", description: \"Criado via GraphQL\", frequency: \"daily\") { id title frequency } }"
+}
+
+### GraphQL - Ver dados do usuário
+POST http://localhost:3000/graphql
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "query": "query { me { id name email } }"
+}
+
+### ===========================================
+### 🧪 TESTES DE ERRO (OPCIONAL)
+### ===========================================
+
+### Tentar acessar sem token (deve retornar 401)
+GET http://localhost:3000/api/habits
+
+### Tentar criar hábito inválido (deve retornar 400)
+POST http://localhost:3000/api/habits
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "frequency": "daily"
+}
+
+### Rota inexistente (deve retornar 404)
+GET http://localhost:3000/api/rota-inexistente
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### ===========================================
+### 📝 NOTAS IMPORTANTES:
+### 
+### - Tokens JWT expiram em 7 dias
+### - Cada usuário só vê seus próprios dados
+### - Progresso é único por hábito/usuário/data
+### - Frequências: daily, weekly, monthly, custom
+### - Datas no formato: YYYY-MM-DD
+### ===========================================
