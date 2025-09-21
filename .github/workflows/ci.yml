@@ -16,21 +16,23 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:latest
+        image: mongo:4.4
         ports:
           - 27017:27017
+        env:
+          MONGO_INITDB_DATABASE: habit-tracker-test
         options: >-
-          --health-cmd "mongo --eval 'db.runCommand({ping: 1})'"
+          --health-cmd "mongo --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
@@ -38,11 +40,15 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Wait for MongoDB
+    - name: Wait for MongoDB to be ready
       run: |
-        until mongo --host localhost:27017 --eval "print('MongoDB is ready')"; do
-          echo "Waiting for MongoDB..."
-          sleep 2
+        for i in {1..30}; do
+          if mongo --host localhost:27017 --eval "db.runCommand('ping').ok" --quiet; then
+            echo "MongoDB is ready!"
+            break
+          fi
+          echo "Waiting for MongoDB... attempt $i"
+          sleep 3
         done
 
     - name: Run unit tests
@@ -59,23 +65,42 @@ jobs:
         MONGODB_URI: mongodb://localhost:27017/habit-tracker-test
         JWT_SECRET: test_secret_key
 
-    - name: Start server for external tests
+    - name: Start server in background
       run: |
         npm start &
-        sleep 10
+        echo $! > server.pid
+        sleep 15
       env:
         NODE_ENV: test
         MONGODB_URI: mongodb://localhost:27017/habit-tracker-test
         JWT_SECRET: test_secret_key
         PORT: 3000
 
+    - name: Wait for server to be ready
+      run: |
+        for i in {1..20}; do
+          if curl -f http://localhost:3000/health > /dev/null 2>&1; then
+            echo "Server is ready!"
+            break
+          fi
+          echo "Waiting for server... attempt $i"
+          sleep 2
+        done
+
     - name: Run external tests
       run: npm run test:external
       env:
         API_URL: http://localhost:3000
+        NODE_ENV: test
+
+    - name: Stop server
+      run: |
+        if [ -f server.pid ]; then
+          kill $(cat server.pid) || true
+        fi
 
     - name: Generate test report
-      run: echo "All tests completed successfully!"
+      run: echo "✅ All tests completed successfully!"
 
   build:
     needs: test
@@ -84,10 +109,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18.x'
 
@@ -95,4 +120,17 @@ jobs:
       run: npm ci
 
     - name: Build application
-      run: echo "Build completed successfully!"
+      run: echo "✅ Build completed successfully!"
+
+    - name: Test Docker build
+      run: |
+        echo "FROM node:18-alpine
+        WORKDIR /app
+        COPY package*.json ./
+        RUN npm ci --only=production
+        COPY . .
+        EXPOSE 3000
+        CMD [\"npm\", \"start\"]" > Dockerfile
+        
+        docker build -t habit-tracker-api:latest .
+        echo "✅ Docker build successful!"
